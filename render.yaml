@@ -1,0 +1,34 @@
+services:
+  # --- BACKEND SERVICE ---
+  - type: web
+    name: product-detective-api
+    env: python
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "./backend/start.sh"
+    plan: free
+    region: oregon
+    envVars:
+      - key: PYTHONPATH
+        value: "backend"
+      - key: ENV
+        value: "production"
+      - key: MONGO_URI
+        sync: false
+        placeholder: "Paste your MongoDB Atlas URI here"
+      - key: REDIS_URL
+        fromService:
+          name: product-detective-cache
+          type: redis
+          property: connectionString
+      - key: ALLOWED_ORIGINS
+        sync: false
+        placeholder: "https://your-vercel-app.vercel.app"
+      - key: SECRET_KEY
+        generateValue: true
+
+  # --- CACHE SERVICE ---
+  - type: redis
+    name: product-detective-cache
+    plan: free
+    region: oregon
+    ipAllowList: [] # Only allow internal connections

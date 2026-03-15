@@ -22,8 +22,19 @@ from config.settings import settings
 async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle manager."""
     logger.info("🔍 Product Detective booting up...")
-    await connect_db()
-    await init_cache()
+    
+    # Connect to DB (Resilient for first boot)
+    try:
+        await connect_db()
+    except Exception as e:
+        logger.error(f"❌ Database connection failed: {e}. Running in degraded mode.")
+        
+    # Init Cache (Resilient)
+    try:
+        await init_cache()
+    except Exception as e:
+        logger.error(f"❌ Cache initialization failed: {e}. Running without cache.")
+        
     logger.info("✅ All systems ready. Begin investigation.")
     yield
     logger.info("🔒 Shutting down...")
