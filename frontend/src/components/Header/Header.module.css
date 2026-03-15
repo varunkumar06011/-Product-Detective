@@ -1,0 +1,81 @@
+.header {
+  border-bottom: 2px solid var(--ink);
+  background: var(--cream);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 20px 20px 18px;
+  text-align: center;
+  position: relative;
+}
+
+.confidential {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.logoIcon {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(24px, 5vw, 38px);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.accent {
+  color: var(--gold);
+}
+
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 1px;
+}
+
+.caseTag {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  text-align: right;
+  line-height: 1.6;
+}
+
+.caseLabel {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+.caseNumber {
+  color: var(--gold);
+  font-size: 13px;
+}
+
+@media (max-width: 480px) {
+  .caseTag { display: none; }
+}

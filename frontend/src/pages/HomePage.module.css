@@ -1,0 +1,83 @@
+.page { padding-top: 28px; display: flex; flex-direction: column; gap: 24px; }
+
+.cardTitle { font-family: var(--font-serif); font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.cardSub   { font-size: 13px; color: var(--ink-3); margin-bottom: 20px; line-height: 1.6; }
+
+.urlRow   { display: flex; gap: 12px; align-items: stretch; }
+.urlInput {
+  flex: 1;
+  background: var(--cream);
+  border: 1.5px solid var(--ink-2);
+  border-radius: var(--border-radius);
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.urlInput:focus    { border-color: var(--gold); }
+.urlInput::placeholder { color: var(--ink-3); }
+.urlError { margin-top: 8px; font-size: 12px; color: var(--red); font-family: var(--font-mono); }
+.urlHint  { margin-top: 10px; font-size: 12px; color: var(--ink-3); font-family: var(--font-mono); }
+.platform { color: var(--gold); }
+
+.demoLabel {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 2px;
+}
+
+.demoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.demoCard {
+  background: var(--paper);
+  border: 1.5px solid var(--paper-2);
+  border-radius: var(--border-radius);
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  box-shadow: 2px 2px 0 rgba(28,26,20,0.06);
+}
+
+.demoCard:hover { border-color: var(--gold); }
+.demoIcon { font-size: 30px; margin-bottom: 8px; }
+.demoName { font-weight: 700; font-size: 14px; margin-top: 4px; }
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.featureItem {
+  background: var(--paper);
+  border: 1px solid var(--paper-2);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.featureIcon  { font-size: 20px; flex-shrink: 0; }
+.featureTitle { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+.featureDesc  { font-size: 12px; color: var(--ink-3); }
+
+@media (max-width: 640px) {
+  .demoGrid  { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .features  { grid-template-columns: 1fr; }
+  .urlRow    { flex-direction: column; }
+}
+
+@media (max-width: 420px) {
+  .demoGrid { grid-template-columns: 1fr; }
+}

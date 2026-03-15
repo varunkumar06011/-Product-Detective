@@ -1,0 +1,119 @@
+.page { padding-top: 28px; display: flex; flex-direction: column; gap: 16px; }
+
+.verdictCard {
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: var(--border-radius);
+  padding: 0 28px 28px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 5px 5px 0 var(--shadow);
+}
+
+/* Decorative corner watermark */
+.caseClosedStamp {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 5px;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Evidence box */
+.evidenceBox {
+  background: var(--paper);
+  border: 1px solid var(--paper-2);
+  border-radius: var(--border-radius);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.evidencePoint {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  margin-bottom: 9px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+
+.arrow {
+  font-family: var(--font-mono);
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Alternatives preview */
+.altsPreview {
+  background: var(--paper);
+  border: 1px solid var(--paper-2);
+  border-radius: var(--border-radius);
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+
+.altRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.altRow:last-child { margin-bottom: 0; }
+
+.altRank {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold);
+  min-width: 24px;
+  flex-shrink: 0;
+}
+
+.altName   { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+.altReason { font-size: 12px; color: var(--ink-3); font-family: var(--font-mono); }
+
+.altPrice {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  flex-wrap: wrap;
+}
+
+.footer span + span::before {
+  content: '·';
+  margin-right: 14px;
+}
+
+@media (max-width: 480px) {
+  .verdictCard { padding: 0 16px 20px; }
+  .actions { flex-direction: column; }
+  .actions button { width: 100%; justify-content: center; }
+}
