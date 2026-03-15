@@ -117,10 +117,10 @@ class SentimentModel:
             scores.append(score)
 
         total = len(reviews)
-        pos_pct = round(counts["positive"] / total * 100, 1)
-        neu_pct = round(counts["neutral"]  / total * 100, 1)
-        neg_pct = round(counts["negative"] / total * 100, 1)
-        avg_score = round(np.mean(scores), 3)
+        pos_pct = float(round(counts["positive"] / total * 100, 1))
+        neu_pct = float(round(counts["neutral"]  / total * 100, 1))
+        neg_pct = float(round(counts["negative"] / total * 100, 1))
+        avg_score = float(round(np.mean(scores), 3))
 
         # Extract top phrases per sentiment bucket
         pos_texts = [r["body"] for r, s in zip(reviews, per_review) if s.label == "positive"]
