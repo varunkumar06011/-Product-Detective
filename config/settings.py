@@ -24,11 +24,11 @@ class Settings(BaseSettings):
     CACHE_TTL: int = 3600  # seconds
 
     # CORS
-    ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://product-detective.vercel.app" # Default placeholder
-    ]
+    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:5173,https://product-detective.vercel.app"
+
+    @property
+    def cors_origins(self) -> List[str]:
+        return [s.strip() for s in self.ALLOWED_ORIGINS.split(",")]
 
     # Scraper
     SCRAPER_TIMEOUT: int = 30
