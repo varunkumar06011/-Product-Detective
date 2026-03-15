@@ -116,7 +116,8 @@ export const useInvestigationStore = create(
         }, 700)
 
         try {
-          const response = await fetch('/api/v1/verdict/investigate', {
+          const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
+          const response = await fetch(`${baseUrl}/api/v1/verdict/investigate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
