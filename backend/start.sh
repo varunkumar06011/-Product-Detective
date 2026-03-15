@@ -10,7 +10,8 @@
 # Start Uvicorn
 # --proxy-headers: Required for running behind a reverse proxy like Render
 # --forwarded-allow-ips='*': Required for correct client IP detection
-exec uvicorn main:app \
+export PYTHONPATH=$PYTHONPATH:$(pwd):$(pwd)/backend
+exec uvicorn backend.main:app \
     --host 0.0.0.0 \
     --port ${PORT:-8000} \
     --workers 1 \
