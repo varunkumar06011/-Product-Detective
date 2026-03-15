@@ -17,7 +17,6 @@ selenium==4.21.0
 webdriver-manager==4.0.1
 
 # NLP & ML (Optimized for Free Tier)
-transformers>=4.0.0
 scikit-learn>=1.0.0
 scipy>=1.7.0
 numpy>=1.20.0

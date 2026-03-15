@@ -10,7 +10,13 @@ from dataclasses import dataclass
 from collections import Counter
 
 import numpy as np
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+try:
+    from transformers import pipeline
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
+    pipeline = None
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from config.settings import settings
@@ -63,6 +69,11 @@ class SentimentModel:
         self._load_model()
 
     def _load_model(self):
+        if not TRANSFORMERS_AVAILABLE:
+            logger.info("Transformer support not installed. Using rule-based engine.")
+            self._pipe = None
+            return
+
         try:
             logger.info(f"Loading sentiment model: {settings.SENTIMENT_MODEL}")
             self._pipe = pipeline(
