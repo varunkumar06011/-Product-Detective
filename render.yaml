@@ -8,6 +8,8 @@ services:
     plan: free
     region: oregon
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
       - key: PYTHONPATH
         value: "backend"
       - key: ENV
