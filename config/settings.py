@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     ENV: str = "development"
     SECRET_KEY: str = "change-me-in-production"
     DEBUG: bool = True
+    USE_TRANSFORMERS: bool = False  # Set to True only if RAM > 2GB
 
     # Database
     MONGO_URI: str = "mongodb://localhost:27017"

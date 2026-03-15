@@ -74,6 +74,11 @@ class SentimentModel:
             self._pipe = None
             return
 
+        if not settings.USE_TRANSFORMERS:
+            logger.info("USE_TRANSFORMERS is False. Using rule-based engine to save memory.")
+            self._pipe = None
+            return
+
         try:
             logger.info(f"Loading sentiment model: {settings.SENTIMENT_MODEL}")
             self._pipe = pipeline(
