@@ -107,12 +107,18 @@ class AmazonScraper:
     Handles anti-bot measures via randomised delays and headless Selenium.
     """
 
-    REVIEW_PAGES_MAX = 3  # 3 pages × 10 reviews = max 30 reviews (Safe for Free Tier)
+    REVIEW_PAGES_MAX = 2  # 2 pages × 10 reviews = max 20 reviews (Fastest for Free Tier)
 
     def __init__(self):
         self.session = httpx.AsyncClient(
-            headers={"User-Agent": settings.SCRAPER_USER_AGENT},
-            timeout=settings.SCRAPER_TIMEOUT,
+            headers={
+                "User-Agent": settings.SCRAPER_USER_AGENT,
+                "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+                "Referer": "https://www.google.com/",
+            },
+            timeout=15.0, # Shorter timeout to fail fast to Selenium if needed
             follow_redirects=True,
         )
 
@@ -200,12 +206,17 @@ class AmazonScraper:
 
     def _selenium_fetch(self, url: str) -> str:
         with SeleniumDriver() as driver:
-            driver.get(url)
-            WebDriverWait(driver, 15).until(
-                EC.presence_of_element_located((By.ID, "productTitle"))
-            )
-            time.sleep(2)  # let JS settle
-            return driver.page_source
+            driver.set_page_load_timeout(30)
+            try:
+                driver.get(url)
+                # Wait for title OR captcha
+                WebDriverWait(driver, 10).until(
+                    lambda d: d.find_elements(By.ID, "productTitle") or d.find_elements(By.ID, "captchacharacters")
+                )
+                return driver.page_source
+            except Exception as e:
+                logger.error(f"Selenium fetch failed: {e}")
+                return ""
 
     def _parse_product_page(self, html: str, url: str, product_id: str) -> ProductData:
         soup = BeautifulSoup(html, "lxml")
