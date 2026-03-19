@@ -109,17 +109,27 @@ export const useInvestigationStore = create(
         set({ loading: true, error: null, loadingStep: 0, screen: SCREENS.LOADING })
 
         // Simulate step progression while API call runs
+        // We slow down as we get closer to 100% to avoid looking "stuck"
         const stepTimer = setInterval(() => {
-          set((state) => ({
-            loadingStep: Math.min(state.loadingStep + 1, LOADING_STEPS.length - 1),
-          }))
-        }, 700)
+          set((state) => {
+            const nextStep = state.loadingStep + 1
+            if (nextStep >= LOADING_STEPS.length - 1) {
+              // Stay at the second to last step until API resolves
+              return { loadingStep: LOADING_STEPS.length - 2 }
+            }
+            return { loadingStep: nextStep }
+          })
+        }, 800)
 
         try {
           const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 95000) // 95s timeout for slow scrapes
+
           const response = await fetch(`${baseUrl}/api/v1/verdict/investigate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
             body: JSON.stringify({
               url,
               budget: parseFloat(budget) || 0,
@@ -128,9 +138,17 @@ export const useInvestigationStore = create(
             }),
           })
 
+          clearTimeout(timeoutId)
+
           if (!response.ok) {
-            const err = await response.json()
-            throw new Error(err.detail || 'Investigation failed')
+            let errorMsg = 'Investigation failed'
+            try {
+              const err = await response.json()
+              errorMsg = err.detail || errorMsg
+            } catch (e) {
+              errorMsg = `Server Error (${response.status})`
+            }
+            throw new Error(errorMsg)
           }
 
           const data = await response.json()
@@ -153,7 +171,10 @@ export const useInvestigationStore = create(
           })
         } catch (err) {
           clearInterval(stepTimer)
-          set({ loading: false, error: err.message, screen: SCREENS.INTERROGATION })
+          const message = err.name === 'AbortError' 
+            ? 'The investigation is taking too long. Amazon might be blocking our scraper or the server is overloaded. Please try again in a few minutes.'
+            : err.message
+          set({ loading: false, error: message, screen: SCREENS.INTERROGATION })
         }
       },
 

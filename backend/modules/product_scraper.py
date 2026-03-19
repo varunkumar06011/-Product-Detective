@@ -107,7 +107,7 @@ class AmazonScraper:
     Handles anti-bot measures via randomised delays and headless Selenium.
     """
 
-    REVIEW_PAGES_MAX = 10  # 10 pages × 10 reviews = max 100 reviews per request
+    REVIEW_PAGES_MAX = 3  # 3 pages × 10 reviews = max 30 reviews (Safe for Free Tier)
 
     def __init__(self):
         self.session = httpx.AsyncClient(
@@ -269,8 +269,14 @@ class AmazonScraper:
                 if resp.status_code == 200 and "captcha" not in resp.text.lower():
                     html = resp.text
                 else:
-                    logger.warning(f"Review page {page} blocked, using Selenium")
-                    html = self._selenium_fetch_reviews(url_with_params)
+                    logger.warning(f"Review page {page} blocked, attempting batch Selenium fetch")
+                    # If blocked, we fetch the remaining pages in one Selenium session
+                    remaining_htmls = self._selenium_fetch_reviews_batch(base_url, page, self.REVIEW_PAGES_MAX)
+                    for r_html in remaining_htmls:
+                        page_reviews = self._parse_reviews_page(r_html)
+                        if page_reviews:
+                            reviews.extend(page_reviews)
+                    break # Batch fetch handles the rest
 
                 if not html:
                     break
@@ -291,17 +297,23 @@ class AmazonScraper:
 
         return reviews[:settings.MAX_REVIEWS_PER_PRODUCT]
 
-    def _selenium_fetch_reviews(self, url: str) -> str:
+    def _selenium_fetch_reviews_batch(self, base_url: str, start_page: int, end_page: int) -> List[str]:
+        """Fetch multiple review pages using a single Selenium session to save RAM."""
+        htmls = []
         with SeleniumDriver() as driver:
-            driver.get(url)
-            try:
-                # Wait for at least one review block
-                WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "[data-hook='review']"))
-                )
-                return driver.page_source
-            except Exception:
-                return ""
+            for page in range(start_page, end_page + 1):
+                url = f"{base_url}?pageNumber={page}&sortBy=recent&reviewerType=all_reviews"
+                try:
+                    driver.get(url)
+                    WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "[data-hook='review']"))
+                    )
+                    htmls.append(driver.page_source)
+                    time.sleep(1) # Small gap between pages
+                except Exception as e:
+                    logger.warning(f"Selenium batch fetch failed at page {page}: {e}")
+                    break
+        return htmls
 
     def _parse_reviews_page(self, html: str) -> List[ProductReview]:
         soup = BeautifulSoup(html, "lxml")
