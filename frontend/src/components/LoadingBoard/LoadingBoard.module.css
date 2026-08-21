@@ -29,4 +29,4 @@
   max-width: 400px; margin: 0 auto 8px; overflow: hidden;
 }
 .progressFill  { height: 100%; background: var(--gold); border-radius: 2px; }
-.progressLabel { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+.progressLabel { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--ink-3); }

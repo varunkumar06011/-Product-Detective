@@ -38,7 +38,8 @@
 .preview    { font-size: 12px; color: var(--ink-3); font-family: var(--font-mono); line-height: 1.5; }
 .revealLabel {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--gold);
   margin-top: 10px;
   display: flex;
@@ -94,9 +95,10 @@
 
 .evidenceTag {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 2px;
-  padding: 3px 10px;
+  padding: 4px 11px;
   border-radius: 10px;
   display: inline-block;
   margin-bottom: 16px;

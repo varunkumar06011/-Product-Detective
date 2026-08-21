@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from datetime import datetime
 import logging
 
@@ -39,4 +39,5 @@ async def get_stats():
             "generated_at": datetime.utcnow().isoformat(),
         }
     except Exception as e:
-        return {"error": str(e)}
+        logger.error(f"Stats endpoint failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve stats: {str(e)}")

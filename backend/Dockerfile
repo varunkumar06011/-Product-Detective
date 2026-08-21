@@ -16,8 +16,10 @@ ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 COPY backend/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Download sentiment model (cached into image)
-RUN python -c "from transformers import pipeline; pipeline('sentiment-analysis', model='cardiffnlp/twitter-roberta-base-sentiment-latest')" || true
+# Optionally download sentiment model (only if USE_TRANSFORMERS will be enabled)
+# Uncomment the following lines to pre-cache the RoBERTa model:
+# RUN pip install --no-cache-dir transformers torch && \
+#     python -c "from transformers import pipeline; pipeline('sentiment-analysis', model='cardiffnlp/twitter-roberta-base-sentiment-latest')"
 
 COPY backend/ .
 COPY config/ config/

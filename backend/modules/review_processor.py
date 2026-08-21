@@ -10,7 +10,7 @@ and the analysis modules.
 import re
 import logging
 import hashlib
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 from datetime import datetime
 from dataclasses import dataclass, field
 
@@ -24,7 +24,7 @@ class ProcessedReview:
     body_clean: str         # normalised, lowercased, punctuation stripped
     body_tokens: List[str]  # word tokens for NLP
     rating: float
-    date: datetime
+    date: Optional[datetime] = None
     verified_purchase: bool
     title: str
     content_hash: str       # MD5 for exact-duplicate detection
@@ -88,8 +88,8 @@ class ReviewProcessor:
                 logger.warning(f"Failed to process review {r.get('review_id', '?')}: {e}")
                 continue
 
-        # Sort by date descending (most recent first)
-        processed.sort(key=lambda r: r.date, reverse=True)
+        # Sort by date descending (most recent first); None dates go last
+        processed.sort(key=lambda r: r.date or datetime.min, reverse=True)
 
         logger.info(
             f"Processed {len(processed)}/{len(raw_reviews)} reviews "
@@ -110,7 +110,7 @@ class ReviewProcessor:
                 "review_id":        r.review_id,
                 "body":             r.body_clean[:self.MAX_BODY_LENGTH],
                 "rating":           r.rating,
-                "date":             r.date.isoformat(),
+                "date":             r.date.isoformat() if r.date else None,
                 "verified_purchase": r.verified_purchase,
                 "title":            r.title,
                 "word_count":       r.word_count,
@@ -153,7 +153,8 @@ class ReviewProcessor:
         tokens = re.findall(r"[a-zA-Z']+", text.lower())
         return [t for t in tokens if len(t) > 1]
 
-    def _parse_date(self, date_val: Any) -> datetime:
+    def _parse_date(self, date_val: Any) -> Optional[datetime]:
+        """Parse a date value. Returns None if parsing fails (caller should filter None)."""
         if isinstance(date_val, datetime):
             return date_val
         if isinstance(date_val, str):
@@ -162,7 +163,7 @@ class ReviewProcessor:
                     return datetime.strptime(date_val[:19], fmt[:len(date_val[:19])])
                 except ValueError:
                     continue
-        return datetime.utcnow()
+        return None
 
     # ── Analytics helpers ──────────────────────────────────────────────────────
 

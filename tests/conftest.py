@@ -5,8 +5,11 @@ import asyncio
 import sys
 import os
 
-# Make backend modules importable from tests
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
+# Make backend modules and config importable from tests
+# conftest is in tests/, so backend is at ../backend and repo root is at ..
+_repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(_repo_root, 'backend'))
+sys.path.insert(0, _repo_root)
 
 
 @pytest.fixture(scope="session")

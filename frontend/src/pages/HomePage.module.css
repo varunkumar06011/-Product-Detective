@@ -1,7 +1,7 @@
 .page { padding-top: 28px; display: flex; flex-direction: column; gap: 24px; }
 
 .cardTitle { font-family: var(--font-serif); font-size: 22px; font-weight: 700; margin-bottom: 8px; }
-.cardSub   { font-size: 13px; color: var(--ink-3); margin-bottom: 20px; line-height: 1.6; }
+.cardSub   { font-size: 15px; font-weight: 600; color: var(--ink-3); margin-bottom: 20px; line-height: 1.6; }
 
 .urlRow   { display: flex; gap: 12px; align-items: stretch; }
 .urlInput {
@@ -18,14 +18,15 @@
 }
 .urlInput:focus    { border-color: var(--gold); }
 .urlInput::placeholder { color: var(--ink-3); }
-.urlError { margin-top: 8px; font-size: 12px; color: var(--red); font-family: var(--font-mono); }
-.urlHint  { margin-top: 10px; font-size: 12px; color: var(--ink-3); font-family: var(--font-mono); }
+.urlError { margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--red); font-family: var(--font-mono); }
+.urlHint  { margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--ink-3); font-family: var(--font-mono); }
 .platform { color: var(--gold); }
 
 .demoLabel {
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--ink-3);
   letter-spacing: 2px;
 }
@@ -70,7 +71,7 @@
 
 .featureIcon  { font-size: 20px; flex-shrink: 0; }
 .featureTitle { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
-.featureDesc  { font-size: 12px; color: var(--ink-3); }
+.featureDesc  { font-size: 13px; font-weight: 600; color: var(--ink-3); }
 
 @media (max-width: 640px) {
   .demoGrid  { grid-template-columns: repeat(3, 1fr); gap: 8px; }

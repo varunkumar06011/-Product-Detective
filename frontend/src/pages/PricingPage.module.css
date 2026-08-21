@@ -1,0 +1,118 @@
+.page {
+  padding-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.heading {
+  text-align: center;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(24px, 5vw, 34px);
+  font-weight: 900;
+  color: var(--ink);
+  margin: 8px 0 4px;
+}
+
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.tiers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.tier {
+  background: var(--paper);
+  border: 2px solid var(--paper-2);
+  border-radius: var(--border-radius);
+  padding: 26px 24px 22px;
+  position: relative;
+  box-shadow: 3px 3px 0 var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tierPro {
+  border-color: var(--gold);
+  box-shadow: 4px 4px 0 var(--shadow-lg);
+}
+
+.badge {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gold);
+  color: var(--cream);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  padding: 4px 12px;
+  border-radius: 10px;
+}
+
+.tierName {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: var(--ink-3);
+}
+
+.tierPrice {
+  font-family: var(--font-serif);
+  font-size: 42px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.tierPro .tierPrice { color: var(--gold); }
+
+.tierPeriod {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-3);
+  margin-bottom: 14px;
+}
+
+.tierFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.tierFeatures li {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.muted { color: var(--ink-3); opacity: 0.7; }
+
+.accountRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+@media (max-width: 600px) {
+  .tiers { grid-template-columns: 1fr; }
+}

@@ -47,6 +47,8 @@ export function useVerdictData() {
     evidence:     s.evidence,
     alternatives: s.alternatives,
     caseNumber:   s.caseNumber,
+    isPro:        s.isPro,
+    paywall:      s.paywall,
   }))
 }
 

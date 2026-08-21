@@ -345,7 +345,7 @@ async def get_stats():
 # Write the files
 import os
 
-routes_dir = "/home/claude/product_detective/backend/api/routes"
+routes_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backend", "api", "routes")
 os.makedirs(routes_dir, exist_ok=True)
 
 files = {

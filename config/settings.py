@@ -59,6 +59,21 @@ class Settings(BaseSettings):
     # Recommendation Engine
     MAX_ALTERNATIVES: int = 3
 
+    # Auth (JWT)
+    JWT_SECRET: str = "change-me-jwt-secret-in-production"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRE_HOURS: int = 168  # 7 days
+
+    # Razorpay
+    RAZORPAY_KEY_ID: str = "rzp_test_XXXXXXXXXXXX"
+    RAZORPAY_KEY_SECRET: str = "your-razorpay-key-secret"
+    RAZORPAY_WEBHOOK_SECRET: str = "your-razorpay-webhook-secret"
+    RAZORPAY_PRO_PLAN_AMOUNT: int = 9900   # ₹99.00 in paise
+    RAZORPAY_CURRENCY: str = "INR"
+
+    # Paywall
+    FREE_EVIDENCE_PREVIEW: int = 2  # free users see first N evidence items
+
     class Config:
         env_file = ".env"
         case_sensitive = True

@@ -32,3 +32,9 @@ redis==5.0.4
 python-dotenv==1.0.1
 python-multipart==0.0.9
 streamlit==1.35.0
+
+# Auth & Payments
+razorpay==1.4.2
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+email-validator==2.1.1

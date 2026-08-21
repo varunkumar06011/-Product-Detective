@@ -4,7 +4,7 @@ Orchestrates the full investigation pipeline:
 scrape → sentiment → complaints → trends → trust → specs → decision → recommend
 """
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, HttpUrl, field_validator
 from typing import Optional, Dict, Any, List
 import asyncio
@@ -21,6 +21,8 @@ from modules.decision_engine import DecisionEngine
 from modules.recommendation_engine import RecommendationEngine
 from utils.database import get_db
 from utils.cache import get_cache, set_cache
+from utils.auth import get_current_user_optional, is_user_pro
+from config.settings import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -76,17 +78,25 @@ class InvestigationResponse(BaseModel):
     evidence: List[str]
     alternatives: List[Dict[str, Any]]
     investigated_at: str
+    is_pro: bool = False
+    paywall: Optional[Dict[str, Any]] = None
 
 
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 
 @router.post("/investigate", response_model=InvestigationResponse)
-async def investigate_product(req: InvestigationRequest):
+async def investigate_product(
+    req: InvestigationRequest,
+    user=Depends(get_current_user_optional),
+):
     """
     Full investigation pipeline. Returns all clue cards + final verdict.
     Results cached for 1 hour per URL.
+    Free users see the verdict + a preview of evidence; full evidence &
+    alternatives are unlocked for Pro users.
     """
-    cache_key = f"investigation:{req.url}:{req.purpose}:{req.priority}"
+    user_pro = is_user_pro(user)
+    cache_key = f"investigation:{req.url}:{req.purpose}:{req.priority}:{user_pro}"
 
     # Cache check
     cached = await get_cache(cache_key)
@@ -199,15 +209,41 @@ async def investigate_product(req: InvestigationRequest):
             product_rating=product.rating,
             product_review_count=product.review_count,
             category=category_eval.detected_category,
-            clue_cards=[c.dict() for c in clue_cards],
+            clue_cards=[c.model_dump() for c in clue_cards],
             verdict=decision.verdict.value,
             confidence=decision.confidence,
             evidence=evidence,
             alternatives=alternatives,
             investigated_at=datetime.utcnow().isoformat(),
+            is_pro=user_pro,
         )
 
-        await set_cache(cache_key, result.dict())
+        # ── Paywall: truncate detailed results for free users ──────────────
+        if not user_pro:
+            preview_n = settings.FREE_EVIDENCE_PREVIEW
+            full_evidence_count = len(evidence)
+            full_alternatives_count = len(alternatives)
+            full_clue_count = len(clue_cards)
+
+            # Truncate evidence to preview count
+            result.evidence = evidence[:preview_n]
+            # Hide alternatives entirely
+            result.alternatives = []
+            # Show only the first clue card (sentiment) as a teaser;
+            # lock the rest (complaints, trends, trust, specs)
+            result.clue_cards = [c.dict() for c in clue_cards[:1]]
+            result.paywall = {
+                "locked": True,
+                "message": (
+                    "You're seeing a preview. Unlock the full evidence, "
+                    "complaint analysis, trust score, and better alternatives with Pro."
+                ),
+                "hidden_evidence_count": max(0, full_evidence_count - preview_n),
+                "hidden_alternatives_count": full_alternatives_count,
+                "hidden_clue_cards_count": max(0, full_clue_count - 1),
+            }
+
+        await set_cache(cache_key, result.model_dump())
         logger.info(f"[{case_id}] Investigation complete — verdict: {decision.verdict.value}")
         return result
 

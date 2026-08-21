@@ -4,16 +4,45 @@
  * alternatives preview, and action buttons.
  */
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useVerdictData, useProductMeta, useInvestigation, SCREENS } from '../hooks/useInvestigation'
+import { useIsPro, useIsLoggedIn } from '../hooks/useAuth'
+import { useAuthStore } from '../store/authStore'
 import VerdictStamp from '../components/VerdictStamp/VerdictStamp'
+import PaymentModal from '../components/PaymentModal/PaymentModal'
+import AuthModal from '../components/AuthModal/AuthModal'
 import styles from './VerdictPage.module.css'
 
 export default function VerdictPage() {
-  const { verdict, confidence, evidence, alternatives, caseNumber } = useVerdictData()
+  const { verdict, confidence, evidence, alternatives, caseNumber, isPro: resultIsPro, paywall } = useVerdictData()
   const { title, price, category } = useProductMeta()
   const { goTo, reset } = useInvestigation()
+  const isPro = useIsPro()
+  const isLoggedIn = useIsLoggedIn()
+  const [payOpen, setPayOpen] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
+  const [pendingUpgrade, setPendingUpgrade] = useState(false)
+
+  // Use the paywall field from the API response (authoritative source)
+  const locked = paywall?.locked === true
+
+  const handleUnlock = () => {
+    if (isLoggedIn) {
+      setPayOpen(true)
+    } else {
+      setPendingUpgrade(true)
+      setAuthOpen(true)
+    }
+  }
+
+  const handleAuthClose = () => {
+    setAuthOpen(false)
+    if (pendingUpgrade && useAuthStore.getState().token) {
+      setPayOpen(true)
+    }
+    setPendingUpgrade(false)
+  }
 
   useEffect(() => {
     if (!verdict) {
@@ -27,13 +56,21 @@ export default function VerdictPage() {
 
   const verdictColor = { BUY: 'var(--green)', WAIT: 'var(--gold)', AVOID: 'var(--red)' }[verdict]
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const text = `Product Detective verdict on "${title}": ${verdict} (${confidence}% confidence)\nCase: ${caseNumber}`
     if (navigator.share) {
-      navigator.share({ title: 'Product Detective Report', text })
+      try {
+        await navigator.share({ title: 'Product Detective Report', text })
+      } catch {
+        /* user cancelled share dialog */
+      }
     } else {
-      navigator.clipboard.writeText(text)
-      alert('Report summary copied to clipboard!')
+      try {
+        await navigator.clipboard.writeText(text)
+        alert('Report summary copied to clipboard!')
+      } catch {
+        alert('Could not copy to clipboard. Please copy manually:\n\n' + text)
+      }
     }
   }
 
@@ -101,6 +138,36 @@ export default function VerdictPage() {
           </motion.div>
         )}
 
+        {/* Paywall overlay for free users */}
+        {locked && (
+          <motion.div
+            className={styles.paywall}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.75 }}
+          >
+            <div className={styles.paywallIcon}>🔒</div>
+            <div className={styles.paywallTitle}>Case File Partially Sealed</div>
+            <p className={styles.paywallText}>
+              You've seen the verdict. Unlock the <strong>full evidence breakdown</strong>,
+              complaint analysis, and better alternatives with <strong>Pro</strong>.
+            </p>
+            <button
+              className="btn-primary"
+              style={{ justifyContent: 'center', marginTop: 8 }}
+              onClick={handleUnlock}
+            >
+              {isLoggedIn ? 'Unlock with Pro · ₹99 →' : 'Login to Unlock →'}
+            </button>
+            <button
+              className={styles.paywallLink}
+              onClick={() => goTo(SCREENS.PRICING)}
+            >
+              See what's included
+            </button>
+          </motion.div>
+        )}
+
         {/* Action buttons */}
         <motion.div
           className={styles.actions}
@@ -136,6 +203,9 @@ export default function VerdictPage() {
         {price > 0 && <span>₹{price.toLocaleString('en-IN')}</span>}
         {category && <span>{category}</span>}
       </div>
+
+      <PaymentModal open={payOpen} onClose={() => setPayOpen(false)} />
+      <AuthModal open={authOpen} onClose={handleAuthClose} mode="login" />
     </motion.div>
   )
 }

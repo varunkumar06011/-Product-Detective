@@ -51,7 +51,7 @@ class SpecRequest(BaseModel):
 @router.post("/sentiment")
 async def analyze_sentiment(req: SentimentRequest):
     """Run sentiment analysis on a batch of reviews."""
-    raw = [r.dict() for r in req.reviews]
+    raw = [r.model_dump() for r in req.reviews]
     report = sentiment_model.analyze_reviews(raw)
     return {
         "positive_pct": report.positive_pct,
@@ -70,7 +70,7 @@ async def analyze_sentiment(req: SentimentRequest):
 @router.post("/complaints")
 async def analyze_complaints(req: ComplaintRequest):
     """Detect complaint clusters from negative reviews."""
-    raw = [r.dict() for r in req.reviews]
+    raw = [r.model_dump() for r in req.reviews]
     report = complaint_detector.detect(
         raw,
         product_category=req.product_category,
@@ -97,7 +97,7 @@ async def analyze_complaints(req: ComplaintRequest):
 @router.post("/trust")
 async def analyze_trust(req: TrustRequest):
     """Calculate review trust / authenticity score."""
-    raw = [r.dict() for r in req.reviews]
+    raw = [r.model_dump() for r in req.reviews]
     report = trust_model.calculate(raw, req.sentiment_labels or {})
     return {
         "score": report.score,

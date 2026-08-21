@@ -83,6 +83,18 @@ async def _create_indexes():
         # feedback: lookup by case_id
         await db.feedback.create_index("case_id")
 
+        # users: unique email + user_id
+        await db.users.create_index("email", unique=True)
+        await db.users.create_index("user_id", unique=True)
+
+        # orders: lookup by razorpay_order_id
+        await db.orders.create_index("razorpay_order_id", unique=True)
+        await db.orders.create_index("user_id")
+
+        # payments: lookup by payment_id
+        await db.payments.create_index("razorpay_payment_id", unique=True)
+        await db.payments.create_index("user_id")
+
         logger.info("Database indexes created.")
     except OperationFailure as e:
         logger.warning(f"Index creation warning (may already exist): {e}")

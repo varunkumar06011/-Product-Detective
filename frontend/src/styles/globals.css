@@ -1,13 +1,11 @@
 /* Product Detective — Global Styles
    Detective noir aesthetic:
    - Cream paper backgrounds with noise texture
-   - Playfair Display (serif) for headings
-   - IBM Plex Mono for labels / data
-   - Lato for body text
+   - Hanken Grotesk for all text (headings, body, labels, data)
    - Gold accent (#C8973A), ink (#1C1A14), red danger (#B83224)
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=Lato:wght@300;400;700&family=Fredoka:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&display=swap');
 
 /* ── Design Tokens ─────────────────────────────────────────────────────── */
 :root {
@@ -28,11 +26,11 @@
   --shadow:     rgba(28, 26, 20, 0.18);
   --shadow-lg:  rgba(28, 26, 20, 0.28);
 
-  /* Typography */
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-mono:  'IBM Plex Mono', 'Courier New', monospace;
-  --font-body:  'Lato', system-ui, sans-serif;
-  --font-heading: 'Fredoka', 'Playfair Display', sans-serif;
+  /* Typography — single unified typeface for the whole app */
+  --font-serif: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-mono:  'Hanken Grotesk', system-ui, sans-serif;
+  --font-body:  'Hanken Grotesk', system-ui, sans-serif;
+  --font-heading: 'Hanken Grotesk', system-ui, sans-serif;
 
   /* Spacing scale */
   --space-1: 4px;
@@ -123,7 +121,8 @@ h1, h2, h3, h4, h5 {
 
 .label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 13px;
+  font-weight: 600;
   letter-spacing: 3px;
   color: var(--gold);
   text-transform: uppercase;
@@ -201,9 +200,10 @@ h1, h2, h3, h4, h5 {
 /* ── Stamps / Badges ─────────────────────────────────────────────────────── */
 .stamp {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 2px;
-  padding: 3px 10px;
+  padding: 4px 11px;
   border-radius: 10px;
   display: inline-block;
   text-transform: uppercase;
@@ -235,8 +235,9 @@ h1, h2, h3, h4, h5 {
 .tag {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 10px;
-  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
   border-radius: 10px;
   margin: 2px 3px 2px 0;
 }

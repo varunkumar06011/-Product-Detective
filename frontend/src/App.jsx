@@ -13,6 +13,7 @@ import InterrogationPage from './pages/InterrogationPage'
 import LoadingBoard from './components/LoadingBoard/LoadingBoard'
 import InvestigationBoard from './components/InvestigationBoard/InvestigationBoard'
 import VerdictPage from './pages/VerdictPage'
+import PricingPage from './pages/PricingPage'
 import './styles/globals.css'
 
 const PAGE_COMPONENTS = {
@@ -21,6 +22,7 @@ const PAGE_COMPONENTS = {
   [SCREENS.LOADING]:       LoadingBoard,
   [SCREENS.BOARD]:         InvestigationBoard,
   [SCREENS.VERDICT]:       VerdictPage,
+  [SCREENS.PRICING]:       PricingPage,
 }
 
 const pageVariants = {

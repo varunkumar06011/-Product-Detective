@@ -125,10 +125,11 @@ class AmazonScraper:
     async def scrape(self, url: str) -> ProductData:
         logger.info(f"Targeting Amazon URL: {url}")
         
+        product_id = ""
         try:
             # 1. Fetch the product page first (follows redirects)
             html = await self._fetch_page(url)
-            
+
             # 2. Extract ASIN from final state (HTML or final URL might be better but we only have HTML here)
             product_id = self._extract_asin(url) or self._extract_asin_from_html(html)
             

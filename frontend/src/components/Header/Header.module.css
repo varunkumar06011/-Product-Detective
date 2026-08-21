@@ -16,7 +16,8 @@
 
 .confidential {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 13px;
+  font-weight: 600;
   letter-spacing: 4px;
   color: var(--gold);
   margin-bottom: 8px;
@@ -49,7 +50,8 @@
 
 .subtitle {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--ink-3);
   letter-spacing: 1px;
 }
@@ -67,7 +69,8 @@
 
 .caseLabel {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 2px;
 }
 
@@ -78,4 +81,86 @@
 
 @media (max-width: 480px) {
   .caseTag { display: none; }
+}
+
+/* ── Auth / Upgrade row ───────────────────────────────────────────────────── */
+.authRow {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navLink {
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 4px 8px;
+  letter-spacing: 1px;
+  transition: color 0.15s;
+}
+.navLink:hover { color: var(--ink); }
+.navActive { color: var(--gold); }
+
+.loginBtn {
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.loginBtn:hover { background: var(--ink-2); }
+
+.upgradeBtn {
+  background: var(--gold);
+  color: var(--ink);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.upgradeBtn:hover { background: var(--gold-2); transform: translateY(-1px); }
+
+.proBadge {
+  background: rgba(200,151,58,0.15);
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  border-radius: var(--border-radius);
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.logoutBtn {
+  background: none;
+  border: 1px solid var(--paper-2);
+  color: var(--ink-3);
+  border-radius: var(--border-radius);
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.logoutBtn:hover { border-color: var(--ink-3); color: var(--ink); }
+
+@media (max-width: 600px) {
+  .authRow { position: static; justify-content: center; margin-top: 10px; }
 }

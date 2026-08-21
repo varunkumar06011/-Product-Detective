@@ -5,6 +5,7 @@
 
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
+import { useAuthStore } from './authStore'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -14,6 +15,7 @@ export const SCREENS = {
   LOADING:       'LOADING',
   BOARD:         'BOARD',
   VERDICT:       'VERDICT',
+  PRICING:       'PRICING',
 }
 
 export const VERDICT = {
@@ -56,6 +58,10 @@ const initialState = {
   confidence: 0,
   evidence: [],
   alternatives: [],
+
+  // Paywall
+  isPro: false,
+  paywall: null,
 }
 
 // ── Loading log messages (shown during investigation) ─────────────────────────
@@ -126,9 +132,16 @@ export const useInvestigationStore = create(
           const controller = new AbortController()
           const timeoutId = setTimeout(() => controller.abort(), 95000) // 95s timeout for slow scrapes
 
+          // Include auth token if logged in (so Pro users get full results)
+          const authToken = useAuthStore.getState().token
+          const headers = { 'Content-Type': 'application/json' }
+          if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`
+          }
+
           const response = await fetch(`${baseUrl}/api/v1/verdict/investigate`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             signal: controller.signal,
             body: JSON.stringify({
               url,
@@ -168,6 +181,8 @@ export const useInvestigationStore = create(
             confidence:         data.confidence,
             evidence:           data.evidence,
             alternatives:       data.alternatives,
+            isPro:              data.is_pro || false,
+            paywall:            data.paywall || null,
           })
         } catch (err) {
           clearInterval(stepTimer)
@@ -180,6 +195,11 @@ export const useInvestigationStore = create(
 
       // Demo mode — load pre-built investigation results (no API call)
       loadDemo: (demoData) => {
+        // Clear any existing demo timer before starting a new one
+        const existingTimer = get()._demoTimer
+        if (existingTimer) clearInterval(existingTimer)
+
+        // Demo shows full results (no paywall) so users can see what Pro offers
         set({
           url:                demoData.url,
           productTitle:       demoData.title,
@@ -192,6 +212,8 @@ export const useInvestigationStore = create(
           confidence:         demoData.confidence,
           evidence:           demoData.evidence,
           alternatives:       demoData.alternatives,
+          isPro:              true,    // demo shows full unlocked experience
+          paywall:            null,
           loading:            false,
           error:              null,
           screen:             SCREENS.LOADING,
@@ -204,9 +226,11 @@ export const useInvestigationStore = create(
             set({ loadingStep: step })
             if (step >= LOADING_STEPS.length - 1) {
               clearInterval(timer)
+              set({ _demoTimer: null })
               setTimeout(() => set({ screen: SCREENS.BOARD }), 400)
             }
           }, 550)
+          set({ _demoTimer: timer })
         },
 
       // ── Clue interaction ────────────────────────────────────────────────────
@@ -220,6 +244,8 @@ export const useInvestigationStore = create(
 
       // ── Reset ───────────────────────────────────────────────────────────────
       reset: () => {
+        const existingTimer = get()._demoTimer
+        if (existingTimer) clearInterval(existingTimer)
         const caseNumber = `PD-${Math.floor(Math.random() * 9000 + 1000)}`
         set({ ...initialState, caseNumber })
       },

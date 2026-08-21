@@ -94,11 +94,11 @@ export default function HomePage() {
             onClick={() => handleDemo(demo.id)}
           >
             <div className={styles.demoIcon}>{demo.icon}</div>
-            <div className={styles.demoType} style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-3)', letterSpacing: 2 }}>
+            <div className={styles.demoType} style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600, color: 'var(--ink-3)', letterSpacing: 2 }}>
               TRY DEMO
             </div>
             <div className={styles.demoName}>{demo.label}</div>
-            <div className={styles.demoPrice} style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-3)', marginTop: 4 }}>
+            <div className={styles.demoPrice} style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--ink-3)', marginTop: 4 }}>
               ₹{demo.price.toLocaleString()} · ★ {demo.rating}
             </div>
             <VerdictPill verdict={demo.verdict} />
@@ -138,8 +138,8 @@ function VerdictPill({ verdict }) {
     <div style={{
       marginTop: 10, display: 'inline-block',
       background: style.bg, color: style.color,
-      fontFamily: 'var(--font-mono)', fontSize: 9,
-      letterSpacing: 2, padding: '3px 10px', borderRadius: 10,
+      fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600,
+      letterSpacing: 2, padding: '4px 11px', borderRadius: 10,
     }}>
       {verdict}
     </div>
