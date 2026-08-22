@@ -66,14 +66,60 @@ class PlatformRouter:
         "amazon.in": "amazon",
         "amzn.in": "amazon",
         "amazon.com": "amazon",
+        "amazon.co.uk": "amazon",
+        "amazon.de": "amazon",
+        "amazon.ca": "amazon",
+        "amazon.com.au": "amazon",
+        "amazon.sg": "amazon",
+        "amazon.ae": "amazon",
+        "amazon.sa": "amazon",
         "flipkart.com": "flipkart",
     }
+
+    # Domains that are Amazon infrastructure (images, CDN, short links)
+    # but NOT product pages — we reject these with a helpful message
+    AMAZON_NON_PRODUCT_DOMAINS = {
+        "m.media-amazon.com",
+        "images-na.ssl-images-amazon.com",
+        "ecx.images-amazon.com",
+        "ssl-images-amazon.com",
+    }
+
+    IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".svg")
 
     @classmethod
     def detect(cls, url: str) -> Optional[str]:
         parsed = urlparse(url)
         hostname = parsed.netloc.lstrip("www.")
-        return cls.PLATFORMS.get(hostname)
+        path = parsed.path.lower()
+
+        # Reject image URLs with a helpful error
+        if any(path.endswith(ext) for ext in cls.IMAGE_EXTENSIONS):
+            raise ValueError(
+                "This looks like an image URL, not a product page. "
+                "Please paste the full product page URL from your browser's address bar "
+                "(e.g. https://www.amazon.in/dp/B0XXXXXXXX)."
+            )
+
+        # Reject Amazon CDN/image domains
+        if hostname in cls.AMAZON_NON_PRODUCT_DOMAINS:
+            raise ValueError(
+                "This is an Amazon image/CDN URL, not a product page. "
+                "Please paste the full product page URL from your browser's address bar."
+            )
+
+        # Exact match first
+        platform = cls.PLATFORMS.get(hostname)
+        if platform:
+            return platform
+
+        # Fuzzy match: any domain containing "amazon" → amazon
+        if "amazon" in hostname:
+            return "amazon"
+        if "flipkart" in hostname:
+            return "flipkart"
+
+        return None
 
 
 class SeleniumDriver:

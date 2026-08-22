@@ -249,6 +249,10 @@ async def investigate_product(
 
     except HTTPException:
         raise
+    except ValueError as e:
+        # User-facing errors (bad URL, unsupported platform, image URL, etc.)
+        logger.warning(f"[{case_id}] Invalid input: {e}")
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         logger.error(f"[{case_id}] Investigation failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Investigation error: {str(e)}")
