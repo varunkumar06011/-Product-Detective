@@ -130,7 +130,7 @@ export const useInvestigationStore = create(
         try {
           const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
           const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 95000) // 95s timeout for slow scrapes
+          const timeoutId = setTimeout(() => controller.abort(), 120000) // 120s timeout (Render cold starts + slow scrapes)
 
           // Include auth token if logged in (so Pro users get full results)
           const authToken = useAuthStore.getState().token

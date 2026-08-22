@@ -5,6 +5,7 @@ Uses BeautifulSoup for static pages, Selenium for dynamic JS-rendered content.
 """
 
 import asyncio
+import os
 import re
 import time
 import logging
@@ -134,6 +135,10 @@ class SeleniumDriver:
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_argument(f"user-agent={settings.SCRAPER_USER_AGENT}")
         options.add_argument("--window-size=1920,1080")
+        # Use system Chromium if available (Docker/Render/Linux)
+        chrome_bin = os.environ.get("CHROME_BIN")
+        if chrome_bin and os.path.isfile(chrome_bin):
+            options.binary_location = chrome_bin
         self.driver = webdriver.Chrome(options=options)
         self.driver.execute_script(
             "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
@@ -164,7 +169,7 @@ class AmazonScraper:
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
                 "Referer": "https://www.google.com/",
             },
-            timeout=15.0, # Shorter timeout to fail fast to Selenium if needed
+            timeout=30.0,
             follow_redirects=True,
         )
 

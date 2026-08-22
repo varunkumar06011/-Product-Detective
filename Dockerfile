@@ -1,9 +1,19 @@
 FROM python:3.11-slim
 
-# Install system dependencies for lxml, selenium, etc.
+# Install system dependencies:
+# - gcc/g++: compiling Python packages (lxml, etc.)
+# - libxml2/libxslt: for BeautifulSoup lxml parser
+# - chromium + chromium-driver: for Selenium headless scraping
+# - fonts: so Chromium renders pages properly
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ libxml2-dev libxslt1-dev zlib1g-dev \
+    chromium chromium-driver \
+    fonts-liberation fonts-noto-color-emoji \
     && rm -rf /var/lib/apt/lists/*
+
+# Tell Selenium where Chromium is
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
 WORKDIR /app
 
