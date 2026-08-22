@@ -53,6 +53,41 @@ export default function PaymentModal({ open, onClose, onSuccess }) {
           email: order.user_email,
           name: order.user_name || '',
         },
+        method: {
+          upi: true,
+          card: true,
+          netbanking: true,
+          wallet: true,
+        },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: 'Pay using UPI',
+                instruments: [
+                  { method: 'upi', flows: ['collect', 'intent'] },
+                ],
+              },
+              cards: {
+                name: 'Pay using Card',
+                instruments: [
+                  { method: 'card' },
+                ],
+              },
+              other: {
+                name: 'Other Methods',
+                instruments: [
+                  { method: 'netbanking' },
+                  { method: 'wallet' },
+                ],
+              },
+            },
+            sequence: ['upi', 'cards', 'other'],
+            preferences: {
+              show_default_blocks: true,
+            },
+          },
+        },
         theme: { color: '#1C1A14' },
         handler: async (response) => {
           // 3. Verify payment on backend
