@@ -24,8 +24,9 @@ pandas>=1.3.0
 joblib>=1.1.0
 
 # Database
-motor==3.4.0         # Async MongoDB driver
+motor==3.4.0         # Async MongoDB driver (investigations/products/reviews)
 pymongo==4.7.2
+asyncpg==0.29.0      # Async PostgreSQL driver (Supabase — auth/payments)
 redis==5.0.4
 
 # Utilities
@@ -36,5 +37,6 @@ streamlit==1.35.0
 # Auth & Payments
 razorpay==1.4.2
 python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
+passlib==1.7.4
+bcrypt==4.1.3
 email-validator==2.1.1

@@ -87,8 +87,12 @@ def verify_webhook_signature(
     webhook_signature: str,
 ) -> bool:
     """Verify a Razorpay webhook payload signature."""
+    secret = settings.RAZORPAY_WEBHOOK_SECRET
+    if not secret or secret.startswith("your-razorpay-webhook-secret"):
+        logger.warning("Webhook secret not configured — rejecting all webhooks.")
+        return False
     expected = hmac.new(
-        key=settings.RAZORPAY_WEBHOOK_SECRET.encode(),
+        key=secret.encode(),
         msg=webhook_body,
         digestmod=hashlib.sha256,
     ).hexdigest()

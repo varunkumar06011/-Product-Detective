@@ -67,15 +67,23 @@ async def signup(req: SignupRequest):
             status_code=status.HTTP_409_CONFLICT,
             detail="An account with this email already exists.",
         )
+    password_hash = hash_password(req.password)
     user = await create_user(
         email=req.email,
         name=req.name,
-        password_hash=hash_password(req.password),
+        password_hash=password_hash,
     )
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Database unavailable. Please try again later.",
+        )
+    # Race condition guard: if the returned doc's password hash doesn't match,
+    # another user was created with this email first
+    if user.get("password_hash") != password_hash:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists.",
         )
     token = create_access_token({"sub": user["user_id"], "email": user["email"]})
     logger.info(f"New user signed up: {user['email']}")

@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useVerdictData, useProductMeta, useInvestigation, SCREENS } from '../hooks/useInvestigation'
-import { useIsPro, useIsLoggedIn } from '../hooks/useAuth'
+import { useIsLoggedIn } from '../hooks/useAuth'
 import { useAuthStore } from '../store/authStore'
 import VerdictStamp from '../components/VerdictStamp/VerdictStamp'
 import PaymentModal from '../components/PaymentModal/PaymentModal'
@@ -15,10 +15,9 @@ import AuthModal from '../components/AuthModal/AuthModal'
 import styles from './VerdictPage.module.css'
 
 export default function VerdictPage() {
-  const { verdict, confidence, evidence, alternatives, caseNumber, isPro: resultIsPro, paywall } = useVerdictData()
+  const { verdict, confidence, evidence, alternatives, caseNumber, paywall } = useVerdictData()
   const { title, price, category } = useProductMeta()
   const { goTo, reset } = useInvestigation()
-  const isPro = useIsPro()
   const isLoggedIn = useIsLoggedIn()
   const [payOpen, setPayOpen] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)

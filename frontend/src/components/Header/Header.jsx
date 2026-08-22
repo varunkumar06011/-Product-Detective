@@ -21,6 +21,7 @@ export default function Header() {
   // Refresh profile once on mount if logged in (syncs Pro status)
   useEffect(() => {
     if (isLoggedIn) refreshProfile()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

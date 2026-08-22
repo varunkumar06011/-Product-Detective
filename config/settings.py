@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     MONGO_URI: str = "mongodb://localhost:27017"
     MONGO_DB: str = "product_detective"
 
+    # Supabase (PostgreSQL — used for auth & payments)
+    SUPABASE_DB_URL: str = ""  # e.g. postgresql://postgres:password@db.xxxx.supabase.co:5432/postgres
+    SUPABASE_URL: str = ""     # e.g. https://xxxx.supabase.co
+    SUPABASE_ANON_KEY: str = ""
+    SUPABASE_SERVICE_KEY: str = ""
+
     # Redis Cache
     REDIS_URL: str = "redis://localhost:6379"
     CACHE_TTL: int = 3600  # seconds

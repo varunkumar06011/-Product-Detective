@@ -231,7 +231,7 @@ async def investigate_product(
             result.alternatives = []
             # Show only the first clue card (sentiment) as a teaser;
             # lock the rest (complaints, trends, trust, specs)
-            result.clue_cards = [c.dict() for c in clue_cards[:1]]
+            result.clue_cards = [c.model_dump() for c in clue_cards[:1]]
             result.paywall = {
                 "locked": True,
                 "message": (

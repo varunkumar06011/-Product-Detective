@@ -15,6 +15,7 @@ import uvicorn
 from api.routes import scraper, analysis, verdict, recommendations, health, auth, payments
 from utils.database import connect_db, disconnect_db
 from utils.cache import init_cache
+from utils.supabase_db import init_supabase, close_supabase
 from config.settings import settings
 
 
@@ -22,23 +23,27 @@ from config.settings import settings
 async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle manager."""
     logger.info("🔍 Product Detective booting up...")
-    
-    # Connect to DB (Resilient for first boot)
+
+    # Connect to MongoDB (investigations/products/reviews — resilient)
     try:
         await connect_db()
     except Exception as e:
         logger.error(f"❌ Database connection failed: {e}. Running in degraded mode.")
-        
+
+    # Connect to Supabase PostgreSQL (auth/payments — resilient)
+    await init_supabase()
+
     # Init Cache (Resilient)
     try:
         await init_cache()
     except Exception as e:
         logger.error(f"❌ Cache initialization failed: {e}. Running without cache.")
-        
+
     logger.info("✅ All systems ready. Begin investigation.")
     yield
     logger.info("🔒 Shutting down...")
     await disconnect_db()
+    await close_supabase()
 
 
 app = FastAPI(

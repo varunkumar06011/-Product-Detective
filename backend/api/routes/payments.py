@@ -1,6 +1,7 @@
 """
 Product Detective — Payments API Routes
 Razorpay order creation, payment verification, and webhook handler.
+Uses Supabase (PostgreSQL) for order/payment persistence.
 """
 
 import json
@@ -10,11 +11,11 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Depends, Request, status
 from pydantic import BaseModel
-from pymongo.errors import PyMongoError
 
 from config.settings import settings
 from modules import payment_gateway
-from utils.auth import get_current_user, set_user_pro, is_user_pro, _get_db
+from utils.auth import get_current_user, set_user_pro, is_user_pro
+from utils import supabase_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -74,24 +75,15 @@ async def create_order(user: dict = Depends(get_current_user)):
             detail="Failed to create payment order. Please try again.",
         )
     # Persist order for reconciliation (non-fatal if DB is down)
-    db = _get_db()
-    if db is not None:
-        try:
-            await db.orders.update_one(
-                {"razorpay_order_id": order["id"]},
-                {"$set": {
-                    "razorpay_order_id": order["id"],
-                    "user_id": user["user_id"],
-                    "email": user["email"],
-                    "amount": order["amount"],
-                    "currency": order["currency"],
-                    "status": order["status"],
-                    "created_at": datetime.now(timezone.utc),
-                }},
-                upsert=True,
-            )
-        except PyMongoError:
-            pass  # order is still valid from Razorpay; just not persisted
+    await supabase_db.upsert_order({
+        "razorpay_order_id": order["id"],
+        "user_id": user["user_id"],
+        "email": user["email"],
+        "amount": order["amount"],
+        "currency": order["currency"],
+        "status": order["status"],
+        "created_at": datetime.now(timezone.utc),
+    })
     return CreateOrderResponse(
         order_id=order["id"],
         amount=order["amount"],
@@ -109,13 +101,7 @@ async def verify_payment(
 ):
     """Verify a Razorpay payment signature and activate Pro."""
     # Verify the order belongs to this user (prevent verifying others' orders)
-    db = _get_db()
-    order_doc = None
-    if db is not None:
-        try:
-            order_doc = await db.orders.find_one({"razorpay_order_id": req.razorpay_order_id})
-        except PyMongoError:
-            pass  # DB down — skip ownership check (signature still verified)
+    order_doc = await supabase_db.get_order(req.razorpay_order_id)
     if order_doc:
         if order_doc.get("user_id") != user["user_id"]:
             logger.warning(
@@ -125,6 +111,17 @@ async def verify_payment(
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="This order does not belong to your account.",
+            )
+        # Verify the order amount matches the expected Pro plan price
+        expected_amount = settings.RAZORPAY_PRO_PLAN_AMOUNT
+        if order_doc.get("amount") != expected_amount:
+            logger.warning(
+                f"Order {req.razorpay_order_id} amount {order_doc.get('amount')} "
+                f"does not match expected {expected_amount}"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Payment amount mismatch. Please contact support.",
             )
         # Idempotency: if already paid, return success without re-processing
         if order_doc.get("status") == "paid":
@@ -147,29 +144,19 @@ async def verify_payment(
     pro_until = datetime.now(timezone.utc) + timedelta(days=PRO_DURATION_DAYS)
     await set_user_pro(user["user_id"], is_pro=True, pro_until=pro_until)
     # Record payment (upsert to handle duplicate verification gracefully)
-    if db is not None:
-        try:
-            await db.payments.update_one(
-                {"razorpay_payment_id": req.razorpay_payment_id},
-                {"$set": {
-                    "user_id": user["user_id"],
-                    "email": user["email"],
-                    "razorpay_order_id": req.razorpay_order_id,
-                    "razorpay_payment_id": req.razorpay_payment_id,
-                    "amount": settings.RAZORPAY_PRO_PLAN_AMOUNT,
-                    "currency": settings.RAZORPAY_CURRENCY,
-                    "status": "captured",
-                    "pro_until": pro_until,
-                    "verified_at": datetime.now(timezone.utc),
-                }},
-                upsert=True,
-            )
-            await db.orders.update_one(
-                {"razorpay_order_id": req.razorpay_order_id},
-                {"$set": {"status": "paid", "payment_id": req.razorpay_payment_id}},
-            )
-        except PyMongoError:
-            pass  # Pro is activated in-memory; payment just not persisted
+    await supabase_db.upsert_payment({
+        "razorpay_payment_id": req.razorpay_payment_id,
+        "user_id": user["user_id"],
+        "email": user["email"],
+        "razorpay_order_id": req.razorpay_order_id,
+        "amount": settings.RAZORPAY_PRO_PLAN_AMOUNT,
+        "currency": settings.RAZORPAY_CURRENCY,
+        "status": "captured",
+        "pro_until": pro_until,
+        "via_webhook": False,
+        "verified_at": datetime.now(timezone.utc),
+    })
+    await supabase_db.mark_order_paid(req.razorpay_order_id, req.razorpay_payment_id)
     logger.info(f"Pro activated for user {user['user_id']} until {pro_until}")
     return VerifyPaymentResponse(
         success=True,
@@ -191,39 +178,50 @@ async def razorpay_webhook(request: Request):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid webhook signature.",
         )
-    event = json.loads(body)
+    try:
+        event = json.loads(body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Malformed webhook payload.",
+        )
     event_type = event.get("event")
     if event_type == "payment.captured":
         payment = event.get("payload", {}).get("payment", {}).get("entity", {})
         order_id = payment.get("order_id")
         notes = payment.get("notes", {})
         user_id = notes.get("user_id")
-        if user_id and order_id:
-            pro_until = datetime.now(timezone.utc) + timedelta(days=PRO_DURATION_DAYS)
-            await set_user_pro(user_id, is_pro=True, pro_until=pro_until)
-            db = _get_db()
-            if db is not None:
-                try:
-                    await db.payments.update_one(
-                        {"razorpay_payment_id": payment.get("id")},
-                        {"$set": {
-                            "user_id": user_id,
-                            "razorpay_order_id": order_id,
-                            "razorpay_payment_id": payment.get("id"),
-                            "amount": payment.get("amount"),
-                            "currency": payment.get("currency"),
-                            "status": "captured",
-                            "pro_until": pro_until,
-                            "via_webhook": True,
-                            "verified_at": datetime.now(timezone.utc),
-                        }},
-                        upsert=True,
-                    )
-                    await db.orders.update_one(
-                        {"razorpay_order_id": order_id},
-                        {"$set": {"status": "paid", "payment_id": payment.get("id")}},
-                    )
-                except PyMongoError:
-                    pass
-            logger.info(f"Webhook: Pro activated for {user_id}")
+        if not (user_id and order_id):
+            return {"status": "ok"}  # ignore events without enough context
+        # Reconcile against persisted order (don't blindly trust notes)
+        order_doc = await supabase_db.get_order(order_id)
+        if order_doc:
+            if order_doc.get("user_id") != user_id:
+                logger.warning(
+                    f"Webhook: order {order_id} belongs to "
+                    f"{order_doc.get('user_id')} not {user_id} — ignoring"
+                )
+                return {"status": "ok"}
+            if order_doc.get("amount") != settings.RAZORPAY_PRO_PLAN_AMOUNT:
+                logger.warning(
+                    f"Webhook: order {order_id} amount mismatch — ignoring"
+                )
+                return {"status": "ok"}
+            if order_doc.get("status") == "paid":
+                return {"status": "ok"}  # idempotency
+        pro_until = datetime.now(timezone.utc) + timedelta(days=PRO_DURATION_DAYS)
+        await set_user_pro(user_id, is_pro=True, pro_until=pro_until)
+        await supabase_db.upsert_payment({
+            "razorpay_payment_id": payment.get("id"),
+            "user_id": user_id,
+            "razorpay_order_id": order_id,
+            "amount": payment.get("amount"),
+            "currency": payment.get("currency"),
+            "status": "captured",
+            "pro_until": pro_until,
+            "via_webhook": True,
+            "verified_at": datetime.now(timezone.utc),
+        })
+        await supabase_db.mark_order_paid(order_id, payment.get("id"))
+        logger.info(f"Webhook: Pro activated for {user_id}")
     return {"status": "ok"}
