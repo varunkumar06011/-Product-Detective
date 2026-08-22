@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["python311", "gcc"]
+
+[phases.install]
+cmds = [
+  "pip install --upgrade pip",
+  "pip install -r backend/requirements.txt"
+]
+
+[phases.build]
+cmds = ["echo 'No build step needed'"]
+
+[start]
+cmd = "cd backend && PYTHONPATH=/app:/app/backend python -m uvicorn main:app --host 0.0.0.0 --port $PORT"
